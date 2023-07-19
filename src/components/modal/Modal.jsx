@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './Modal.scss';
 
-const Modal = ({ selectedImage, onClose }) => {
+const Modal = ({ image, onClose }) => {
   useEffect(() => {
     const handleKeyDown = e => {
       if (e.code === 'Escape') {
@@ -24,9 +24,9 @@ const Modal = ({ selectedImage, onClose }) => {
   return (
     <div className='overlay' onClick={handleBackdropClick}>
       <div className='modal'>
-        {selectedImage && (
+        {image && (
           <>
-            <img src={selectedImage.largeImageURL} alt={selectedImage.tags} />
+            <img src={image.largeImageURL} alt={image.tags} />
             <button className='close_btn' type='button' onClick={onClose}>
               Close
             </button>
