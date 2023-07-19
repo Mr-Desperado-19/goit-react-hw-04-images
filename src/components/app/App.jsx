@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import Searchbar from '../searchbar';
 import ImageGallery from '../image-gallery';
 import Button from '../button';
@@ -6,92 +6,79 @@ import Modal from '../modal';
 import { fetchImages } from '../../services/api';
 import "./App.scss"
 
-class App extends Component {
-  state = {
-    searchQuery: '',
-    page: 1,
-    images: [],
-    selectedImage: null,
-    isLoading: false,
-    error: null,
-    totalHits: null,
-  };
+const App = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [totalHits, setTotalHits] = useState(null);
 
-  componentDidMount() {
-  const query = 'CSS'; 
-  const page = 1;
+  useEffect(() => {
+    const query = 'CSS'; 
+    const page = 1;
 
     fetchImages(query, page)
-      .then(data => console.log(`Total hits: ${data.totalHits}`))
+      .then(data => setTotalHits(data.totalHits))
       .catch(error => console.log(error));
-  }
+  }, []);
 
-  componentDidUpdate(prevProps, prevState) {
-    const { searchQuery, page } = this.state
-    
-    if (
-      prevState.page !== this.state.page ||
-      prevState.searchQuery !== this.state.searchQuery
-    ) {
-      this.fetchImagesApp(searchQuery, page);
+  useEffect(() => {
+    if (searchQuery !== '') {
+      fetchImagesApp(searchQuery, page);
     }
-  }
+  }, [searchQuery, page]);
 
-  onChangeQuery = query => {
-    this.setState({ searchQuery: query, page: 1, images: [] });
+  const onChangeQuery = query => {
+    setSearchQuery(query);
+    setPage(1);
+    setImages([]);
   };
 
-  fetchImagesApp = (searchQuery, page) => {
-    this.setState({ isLoading: true });
+  const fetchImagesApp = (searchQuery, page) => {
+    setIsLoading(true);
 
     fetchImages(searchQuery, page)
       .then(images => {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...images.hits],
-          total: images.totalHits,
-        }));
+        setImages(prevImages => [...prevImages, ...images.hits]);
+        setTotalHits(images.totalHits);
       })
-      .catch(error => this.setState({ error }))
-      .finally(() => this.setState({ isLoading: false }));
+      .catch(error => setError(error))
+      .finally(() => setIsLoading(false));
   };
 
-  btnClick = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const btnClick = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  openModal = image => {
-    this.setState({ selectedImage: image });
+  const openModal = ({ src, tags }) => {
+    setSelectedImage({ largeImageURL: src, tags });
   };
 
-  closeModal = () => {
-    this.setState({ selectedImage: null });
+  const closeModal = () => {
+    setSelectedImage(null);
   };
 
-  render() {
-    const { images, selectedImage, isLoading, error } = this.state;
+  return (
+    <div className='app-container'>
+      <Searchbar onSubmit={onChangeQuery} />
 
-    return (
-      <div className='app-container'>
-        <Searchbar onSubmit={this.onChangeQuery} />
+      {images.length > 0 && (
+        <ImageGallery images={images} onSelect={openModal} />
+      )}
 
-        {images.length > 0 && (
-          <ImageGallery images={images} onSelect={this.openModal} />
-        )}
+      {!isLoading && images.length < totalHits && images.length > 0 && (
+        <Button label="Load more" onClick={btnClick} />
+      )}
 
-        {!isLoading && images.length < this.state.total && (
-          <Button label="Load more" onClick={this.btnClick} />
-        )}
+      {selectedImage && (
+        <Modal image={selectedImage} onClose={closeModal} />
+      )}
 
-        {selectedImage && (
-          <Modal image={selectedImage} onClose={this.closeModal} />
-        )}
-
-        {error && <p>Whoops, something went wrong: {error.message}</p>}
-      </div>
-    );
-  }
-}
+      {error && <p>Whoops, something went wrong: {error.message}</p>}
+    </div>
+  );
+};
 
 export default App;

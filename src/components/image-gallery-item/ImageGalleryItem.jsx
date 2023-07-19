@@ -1,33 +1,28 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import "./ImageGalleryItem.scss"
 
-class ImageGalleryItem extends Component {
-  static propTypes = {
-    webformatURL: PropTypes.string.isRequired,
-    tags: PropTypes.string.isRequired,
-    onSelect: PropTypes.func.isRequired,
+const ImageGalleryItem = ({ src, tags, onSelect }) => {
+  const handleClick = () => {
+    onSelect({ src, tags });
   };
 
-  handleClick = () => {
-    const { largeImage } = this.props;
-    this.props.onClick(largeImage);
-  };
+  return (
+    <li className="image-gallery-item">
+      <img
+        src={src}
+        alt={tags}
+        className="image-gallery-item-image"
+        onClick={handleClick}
+      />
+    </li>
+  );
+};
 
-  render() {
-    const { src, tags } = this.props;
-
-    return (
-      <li className="image-gallery-item">
-        <img
-          src={src}
-          alt={tags}
-          className="image-gallery-item-image"
-          onClick={this.handleClick}
-        />
-      </li>
-    );
-  }
-}
+ImageGalleryItem.propTypes = {
+  src: PropTypes.string.isRequired,
+  tags: PropTypes.string.isRequired,
+  onSelect: PropTypes.func.isRequired,
+};
 
 export default ImageGalleryItem;

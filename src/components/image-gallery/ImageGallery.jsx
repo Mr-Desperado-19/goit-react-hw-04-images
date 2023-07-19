@@ -8,9 +8,8 @@ const ImageGallery = ({ images, onSelect }) => (
       <ImageGalleryItem
         key={id}
         src={webformatURL}
-        alt={id}
-        largeImage={largeImageURL}
-        onClick={onSelect}
+        tags={id}
+        onSelect={onSelect}
       />
     ))}
   </ul>
